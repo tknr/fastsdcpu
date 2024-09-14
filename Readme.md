@@ -448,6 +448,12 @@ To install FastSD CPU on Windows run the following steps :
 
   `./start-webui.sh`
 
+##### webui options
+
+ - to use share option : `./start-webui.sh --share`
+ - to change root url : example. `./start-webui.sh --root_url "/fastsdcpu"`
+ - show help : `./start-webui.sh --help`
+
 ### FastSD CPU on Mac
 
 ![FastSD CPU running on Mac](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-mac-gui.jpg)
