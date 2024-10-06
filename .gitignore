@@ -13,4 +13,4 @@ models/gguf/*
 libstable-diffusion.so
 
 libstable-diffusion.so
-
+models/gguf/
