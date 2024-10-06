@@ -9,4 +9,4 @@ controlnet_models/*.safetensors
 lora_models/*.safetensors
 
 libstable-diffusion.so
-
+models/gguf/
