@@ -43,4 +43,4 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-$PYTHON_COMMAND src/app.py -w ${OPTION_SHARE} ${OPTION_ROOT_PATH}
+$PYTHON_COMMAND $BASEDIR/src/app.py -w ${OPTION_SHARE} ${OPTION_ROOT_PATH}
