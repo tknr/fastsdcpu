@@ -8,3 +8,5 @@ configs/settings.yaml
 controlnet_models/*.safetensors
 lora_models/*.safetensors
 
+libstable-diffusion.so
+
