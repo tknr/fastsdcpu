@@ -131,6 +131,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add token merging support
 - Add Intel AI PC support
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
+- Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -234,7 +235,6 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 - As of now only text to image generation mode is supported
 - Use OpenVINO mode
 - Use int4 model - *rupeshs/FLUX.1-schnell-openvino-int4*
-- Tiny decoder will not work with FLUX
 - 512x512 image generation needs around __30GB__ system RAM
 
 Tested on Intel Core i7-12700 to generate __512x512__ image(3 steps).
@@ -352,6 +352,9 @@ To build the stablediffusion.cpp library follow these steps
 
 - `git clone https://github.com/leejet/stable-diffusion.cpp`
 - `cd stable-diffusion.cpp`
+- `git pull origin master`
+- `git submodule init`
+- `git submodule update`
 - `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
 - `cmake . -DSD_BUILD_SHARED_LIBS=ON`
 - `cmake --build . --config Release`
