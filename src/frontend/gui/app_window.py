@@ -1,41 +1,50 @@
+from datetime import datetime
+
+from app_settings import AppSettings
+from backend.models.lcmdiffusion_setting import DiffusionTask
+from constants import (
+    APP_NAME,
+    APP_VERSION,
+    DEVICE,
+    LCM_DEFAULT_MODEL,
+    LCM_DEFAULT_MODEL_OPENVINO,
+)
+from context import Context
+from frontend.gui.image_generator_worker import ImageGeneratorWorker
+from frontend.gui.image_variations_widget import ImageVariationsWidget
+from frontend.gui.upscaler_widget import UpscalerWidget
+from frontend.gui.img2img_widget import Img2ImgWidget
+from frontend.utils import (
+    enable_openvino_controls,
+    get_valid_model_id,
+    is_reshape_required,
+)
+from paths import FastStableDiffusionPaths
+from PIL.ImageQt import ImageQt
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QSize, Qt, QThreadPool, QUrl
+from PyQt5.QtGui import QDesktopServices, QPixmap
 from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
-    QSlider,
-    QTabWidget,
-    QSpacerItem,
+    QPushButton,
     QSizePolicy,
-    QComboBox,
-    QCheckBox,
+    QSlider,
+    QSpacerItem,
+    QTabWidget,
     QTextEdit,
     QToolButton,
-    QFileDialog,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPixmap, QDesktopServices
-from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl
 
-from PIL.ImageQt import ImageQt
-from constants import (
-    LCM_DEFAULT_MODEL,
-    LCM_DEFAULT_MODEL_OPENVINO,
-    APP_NAME,
-    APP_VERSION,
-)
-from frontend.gui.image_generator_worker import ImageGeneratorWorker
-from app_settings import AppSettings
-from paths import FastStableDiffusionPaths
-from frontend.utils import is_reshape_required
-from context import Context
 from models.interface_types import InterfaceType
-from constants import DEVICE
-from frontend.utils import enable_openvino_controls, get_valid_model_id
-from backend.models.lcmdiffusion_setting import DiffusionTask
+from frontend.gui.base_widget import BaseWidget, ImageLabel
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -43,6 +52,12 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 
 class MainWindow(QMainWindow):
+    settings_changed = QtCore.pyqtSignal()
+    """ This signal is used for enabling/disabling the negative prompt field for 
+    modes that support it; in particular, negative prompt is supported with OpenVINO models 
+    and in LCM-LoRA mode but not in LCM mode
+    """
+
     def __init__(self, config: AppSettings):
         super().__init__()
         self.config = config
@@ -138,10 +153,6 @@ class MainWindow(QMainWindow):
                 LCM_DEFAULT_MODEL_OPENVINO,
             )
         )
-        self.neg_prompt.setEnabled(
-            self.config.settings.lcm_diffusion_setting.use_lcm_lora
-            or self.config.settings.lcm_diffusion_setting.use_openvino
-        )
         self.openvino_lcm_model_id.setEnabled(
             self.config.settings.lcm_diffusion_setting.use_openvino
         )
@@ -153,57 +164,19 @@ class MainWindow(QMainWindow):
         self.show()
 
     def create_main_tab(self):
-        self.img = QLabel("<<Image>>")
-        self.img.setAlignment(Qt.AlignCenter)
-        self.img.setFixedSize(QSize(512, 512))
-        self.vspacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.prompt = QTextEdit()
-        self.prompt.setPlaceholderText("A fantasy landscape")
-        self.prompt.setAcceptRichText(False)
-        self.neg_prompt = QTextEdit()
-        self.neg_prompt.setPlaceholderText("")
-        self.neg_prompt.setAcceptRichText(False)
-        self.neg_prompt_label = QLabel("Negative prompt (Set guidance scale > 1.0):")
-        self.generate = QPushButton("Generate")
-        self.generate.clicked.connect(self.text_to_image)
-        self.prompt.setFixedHeight(40)
-        self.neg_prompt.setFixedHeight(35)
-        self.browse_results = QPushButton("...")
-        self.browse_results.setFixedWidth(30)
-        self.browse_results.clicked.connect(self.on_open_results_folder)
-        self.browse_results.setToolTip("Open output folder")
-
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self.neg_prompt)
-        hlayout.addWidget(self.generate)
-        hlayout.addWidget(self.browse_results)
-
-        self.previous_img_btn = QToolButton()
-        self.previous_img_btn.setText("<")
-        self.previous_img_btn.clicked.connect(self.on_show_previous_image)
-        self.next_img_btn = QToolButton()
-        self.next_img_btn.setText(">")
-        self.next_img_btn.clicked.connect(self.on_show_next_image)
-        hlayout_nav = QHBoxLayout()
-        hlayout_nav.addWidget(self.previous_img_btn)
-        hlayout_nav.addWidget(self.img)
-        hlayout_nav.addWidget(self.next_img_btn)
-
-        vlayout = QVBoxLayout()
-        vlayout.addLayout(hlayout_nav)
-        vlayout.addItem(self.vspacer)
-        vlayout.addWidget(self.prompt)
-        vlayout.addWidget(self.neg_prompt_label)
-        vlayout.addLayout(hlayout)
-
         self.tab_widget = QTabWidget(self)
-        self.tab_main = QWidget()
+        self.tab_main = BaseWidget(self.config, self)
         self.tab_settings = QWidget()
         self.tab_about = QWidget()
-        self.tab_main.setLayout(vlayout)
+        self.img2img_tab = Img2ImgWidget(self.config, self)
+        self.variations_tab = ImageVariationsWidget(self.config, self)
+        self.upscaler_tab = UpscalerWidget(self.config, self)
 
+        # Add main window tabs here
         self.tab_widget.addTab(self.tab_main, "Text to Image")
+        self.tab_widget.addTab(self.img2img_tab, "Image to Image")
+        self.tab_widget.addTab(self.variations_tab, "Image Variations")
+        self.tab_widget.addTab(self.upscaler_tab, "Upscaler")
         self.tab_widget.addTab(self.tab_settings, "Settings")
         self.tab_widget.addTab(self.tab_about, "About")
 
@@ -383,9 +356,10 @@ class MainWindow(QMainWindow):
     def create_about_tab(self):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
+        current_year = datetime.now().year
         self.label.setText(
             f"""<h1>FastSD CPU {APP_VERSION}</h1> 
-               <h3>(c)2023 - 2024 Rupesh Sreeraman</h3>
+               <h3>(c)2023 - {current_year} Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
                 <h3>GitHub : https://github.com/rupeshs/fastsdcpu/</h3>"""
@@ -477,7 +451,6 @@ class MainWindow(QMainWindow):
             self.use_lcm_lora.setEnabled(False)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
-            self.neg_prompt.setEnabled(True)
             self.openvino_lcm_model_id.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
@@ -485,9 +458,9 @@ class MainWindow(QMainWindow):
             self.use_lcm_lora.setEnabled(True)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
-            self.neg_prompt.setEnabled(False)
             self.openvino_lcm_model_id.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
+        self.settings_changed.emit()
 
     def use_tae_sd_changed(self, state):
         if state == 2:
@@ -506,14 +479,13 @@ class MainWindow(QMainWindow):
             self.lcm_model.setEnabled(False)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
-            self.neg_prompt.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = True
         else:
             self.lcm_model.setEnabled(True)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
-            self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
+        self.settings_changed.emit()
 
     def update_clip_skip_label(self, value):
         self.clip_skip_value.setText(f"CLIP Skip: {value}")
@@ -556,74 +528,10 @@ class MainWindow(QMainWindow):
         seed_value = int(self.seed_value.text()) if use_seed else -1
         return seed_value
 
-    def generate_image(self):
-        self.config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
-        self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
-        self.config.settings.lcm_diffusion_setting.negative_prompt = (
-            self.neg_prompt.toPlainText()
-        )
-        self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
-            self.lcm_lora_id.currentText()
-        )
-        self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = (
-            self.base_model_id.currentText()
-        )
-
-        if self.config.settings.lcm_diffusion_setting.use_openvino:
-            model_id = self.openvino_lcm_model_id.currentText()
-            self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
-        else:
-            model_id = self.lcm_model.currentText()
-            self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
-
-        reshape_required = False
-        if self.config.settings.lcm_diffusion_setting.use_openvino:
-            # Detect dimension change
-            reshape_required = is_reshape_required(
-                self.previous_width,
-                self.config.settings.lcm_diffusion_setting.image_width,
-                self.previous_height,
-                self.config.settings.lcm_diffusion_setting.image_height,
-                self.previous_model,
-                model_id,
-                self.previous_num_of_images,
-                self.config.settings.lcm_diffusion_setting.number_of_images,
-            )
-        self.config.settings.lcm_diffusion_setting.diffusion_task = (
-            DiffusionTask.text_to_image.value
-        )
-        images = self.context.generate_text_to_image(
-            self.config.settings,
-            reshape_required,
-            DEVICE,
-        )
-        self.image_index = 0
-        self.gen_images = []
-        for img in images:
-            im = ImageQt(img).copy()
-            pixmap = QPixmap.fromImage(im)
-            self.gen_images.append(pixmap)
-
-        if len(self.gen_images) > 1:
-            self.next_img_btn.setEnabled(True)
-            self.previous_img_btn.setEnabled(False)
-        else:
-            self.next_img_btn.setEnabled(False)
-            self.previous_img_btn.setEnabled(False)
-
-        self.show_image(self.gen_images[0])
-
-        self.previous_width = self.config.settings.lcm_diffusion_setting.image_width
-        self.previous_height = self.config.settings.lcm_diffusion_setting.image_height
-        self.previous_model = model_id
-        self.previous_num_of_images = (
-            self.config.settings.lcm_diffusion_setting.number_of_images
-        )
-
-    def text_to_image(self):
-        self.img.setText("Please wait...")
-        worker = ImageGeneratorWorker(self.generate_image)
-        self.threadpool.start(worker)
+    # def text_to_image(self):
+    #    self.img.setText("Please wait...")
+    #    worker = ImageGeneratorWorker(self.generate_image)
+    #    self.threadpool.start(worker)
 
     def closeEvent(self, event):
         self.config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
@@ -645,3 +553,47 @@ class MainWindow(QMainWindow):
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
         self.use_tae_sd.setChecked(False)
         self.use_lcm_lora.setChecked(False)
+
+    def prepare_generation_settings(self, config):
+        """Populate config settings with the values set by the user in the GUI"""
+        config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
+        config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
+            self.lcm_lora_id.currentText()
+        )
+        config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = (
+            self.base_model_id.currentText()
+        )
+
+        if config.settings.lcm_diffusion_setting.use_openvino:
+            model_id = self.openvino_lcm_model_id.currentText()
+            config.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
+        else:
+            model_id = self.lcm_model.currentText()
+            config.settings.lcm_diffusion_setting.lcm_model_id = model_id
+
+        config.reshape_required = False
+        config.model_id = model_id
+        if config.settings.lcm_diffusion_setting.use_openvino:
+            # Detect dimension change
+            config.reshape_required = is_reshape_required(
+                self.previous_width,
+                config.settings.lcm_diffusion_setting.image_width,
+                self.previous_height,
+                config.settings.lcm_diffusion_setting.image_height,
+                self.previous_model,
+                model_id,
+                self.previous_num_of_images,
+                config.settings.lcm_diffusion_setting.number_of_images,
+            )
+        config.settings.lcm_diffusion_setting.diffusion_task = (
+            DiffusionTask.text_to_image.value
+        )
+
+    def store_dimension_settings(self):
+        """These values are only needed for OpenVINO model reshape"""
+        self.previous_width = self.config.settings.lcm_diffusion_setting.image_width
+        self.previous_height = self.config.settings.lcm_diffusion_setting.image_height
+        self.previous_model = self.config.model_id
+        self.previous_num_of_images = (
+            self.config.settings.lcm_diffusion_setting.number_of_images
+        )
