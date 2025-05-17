@@ -1,6 +1,5 @@
 Aminfri/Juggernaut_XL_Ragnarok-openvino
 Disty0/LCM_SoteMix
-<<<<<<< HEAD
 Disty0/SoteMixV3
 FFusion/FFusionXL-BASE
 OpenVINO/FLUX.1-schnell-int4-ov
