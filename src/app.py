@@ -15,6 +15,10 @@ from models.interface_types import InterfaceType
 from paths import FastStableDiffusionPaths, ensure_path
 from state import get_context, get_settings
 from utils import show_system_info
+from backend.device import get_device_name
+from transformers.utils.hub import move_cache
+
+move_cache()
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
