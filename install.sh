@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export UV_LINK_MODE=copy
 cd $(dirname $0)
 echo Starting FastSD CPU env installation...
 set -e

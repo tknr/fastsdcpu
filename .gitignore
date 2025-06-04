@@ -11,6 +11,4 @@ lora_models/*.safetensors
 lora_models/*.safetensors
 models/gguf/*
 libstable-diffusion.so
-
-libstable-diffusion.so
-models/gguf/
+.gradio
