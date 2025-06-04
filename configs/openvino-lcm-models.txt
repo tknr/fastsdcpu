@@ -26,3 +26,4 @@ rupeshs/sd-turbo-openvino
 rupeshs/sd15-lcm-square-openvino-int8
 rupeshs/sdxl-turbo-openvino-int8
 rupeshs/sdxs-512-0.9-openvino
+

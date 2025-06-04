@@ -497,9 +497,7 @@ Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with 
 
 ##### Linux users
 
-  `source env/bin/activate`
-
-Start CLI  `src/app.py -h`
+Start CLI `bash fastsdcpu_cli.sh -h`
 
 <a id="android"></a>
 
