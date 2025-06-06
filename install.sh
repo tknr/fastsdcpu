@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+export UV_LINK_MODE=copy
+cd $(dirname $0)
 echo Starting FastSD CPU env installation...
 set -e
 PYTHON_COMMAND="python3"
@@ -38,6 +40,9 @@ if [[ "$1" == "--disable-gui" ]]; then
 else
     uv pip install -r "$BASEDIR/requirements.txt"
 fi
+
+## https://github.com/jhj0517/Whisper-WebUI/issues/258#issuecomment-2333390291
+#pip install -U gradio
 
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
