@@ -8,7 +8,6 @@ results
 configs/settings.yaml
 controlnet_models/*.safetensors
 lora_models/*.safetensors
-lora_models/*.safetensors
 models/gguf/*
 libstable-diffusion.so
 .gradio
