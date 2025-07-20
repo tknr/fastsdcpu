@@ -40,7 +40,12 @@ from PyQt5.QtWidgets import (
 )
 
 from models.interface_types import InterfaceType
+<<<<<<< HEAD
 from frontend.gui.base_widget import BaseWidget
+=======
+from frontend.gui.base_widget import BaseWidget, ImageLabel
+from frontend.gui.lora_widget import LoraModelsWidget
+>>>>>>> a03d637 (Add LoRA models tab to the Qt GUI)
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -167,6 +172,7 @@ class MainWindow(QMainWindow):
         self.img2img_tab = Img2ImgWidget(self.config, self)
         self.variations_tab = ImageVariationsWidget(self.config, self)
         self.upscaler_tab = UpscalerWidget(self.config, self)
+        self.loras_tab = LoraModelsWidget(self.config, self)
 
         # Add main window tabs here
         self.tab_widget.addTab(self.tab_main, "Text to Image")
@@ -174,6 +180,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.variations_tab, "Image Variations")
         self.tab_widget.addTab(self.upscaler_tab, "Upscaler")
         self.tab_widget.addTab(self.tab_settings, "Settings")
+        self.tab_widget.addTab(self.loras_tab, "LoRA Models")
         self.tab_widget.addTab(self.tab_about, "About")
 
         self.setCentralWidget(self.tab_widget)
