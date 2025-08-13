@@ -4,7 +4,10 @@ cd $(dirname $0)
 echo Starting FastSD CPU env installation...
 set -e
 PYTHON_COMMAND="python3"
-
+OPTION_DISABLE_GUI=''
+if [ $# -eq 1 ];then
+	OPTION_DISABLE_GUI=$1
+fi
 if ! command -v python3 &>/dev/null; then
     if ! command -v python &>/dev/null; then
         echo "Error: Python not found, please install python 3.8 or higher and try again"
@@ -31,8 +34,8 @@ BASEDIR=$(pwd)
 uv venv --python 3.11.6 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-uv pip install torch --index-url https://download.pytorch.org/whl/cpu
-if [[ "$1" == "--disable-gui" ]]; then
+uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+if [[ "${OPTION_DISABLE_GUI}" == "--disable-gui" ]]; then
     #! For termux , we don't need Qt based GUI
     packages="$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)" 
     # shellcheck disable=SC2086
@@ -41,9 +44,7 @@ else
     uv pip install -r "$BASEDIR/requirements.txt"
 fi
 
-## https://github.com/jhj0517/Whisper-WebUI/issues/258#issuecomment-2333390291
-#pip install -U gradio
-
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
-read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
+echo "FastSD CPU installation completed."
+
