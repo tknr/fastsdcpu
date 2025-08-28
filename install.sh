@@ -2,6 +2,10 @@
 echo Starting FastSD CPU env installation...
 set -e
 PYTHON_COMMAND="python3"
+OPTION_DISABLE_GUI=''
+if [ $# -eq 1 ];then
+        OPTION_DISABLE_GUI=$1
+fi
 
 if ! command -v python3 &>/dev/null; then
     if ! command -v python &>/dev/null; then
@@ -29,8 +33,8 @@ BASEDIR=$(pwd)
 uv venv --python 3.11.6 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-uv pip install torch --index-url https://download.pytorch.org/whl/cpu
-if [[ "$1" == "--disable-gui" ]]; then
+uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+if [[ $OPTION_DISABLE_GUI == "--disable-gui" ]]; then
     #! For termux , we don't need Qt based GUI
     packages="$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)" 
     # shellcheck disable=SC2086
