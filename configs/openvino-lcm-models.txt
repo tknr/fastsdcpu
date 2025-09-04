@@ -2,6 +2,8 @@ Aminfri/Juggernaut_XL_Ragnarok-openvino
 Disty0/LCM_SoteMix
 Disty0/SoteMixV3
 FFusion/FFusionXL-BASE
+MacrossRamen/Realistic_Vision_V1.4-openvino
+MercuryNex/hyperlcm-openvino
 OpenVINO/FLUX.1-schnell-int4-ov
 anokimchen/sd-turbo-openvino-8bit-GPT4vision-calibrated
 anokimchen/sd-turbo-openvino-8bit-no-calibration
@@ -31,3 +33,4 @@ rupeshs/sdxs-512-0.9-openvino
 rupeshs/taef1-openvino
 rupeshs/taesdxl-openvino
 samabogbog/dreamshaper-xl-v2-turbo-openvino
+ysn-rfd/Sweet-mix_v2.2_flat-openvino
