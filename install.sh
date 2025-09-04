@@ -46,3 +46,4 @@ fi
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
+echo ""
