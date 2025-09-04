@@ -1,3 +1,4 @@
+Aminfri/Juggernaut_XL_Ragnarok-openvino
 Disty0/LCM_SoteMix
 Disty0/SoteMixV3
 FFusion/FFusionXL-BASE
@@ -29,3 +30,4 @@ rupeshs/sdxl-turbo-openvino-int8
 rupeshs/sdxs-512-0.9-openvino
 rupeshs/taef1-openvino
 rupeshs/taesdxl-openvino
+samabogbog/dreamshaper-xl-v2-turbo-openvino
