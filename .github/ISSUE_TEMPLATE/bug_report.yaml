@@ -75,7 +75,7 @@ body:
     attributes:
       label: Hardware / CPU
       description: CPU details (e.g., x64, ARM)
-      placeholder: e.g. Intel i7, AMD, ARM
+      placeholder: e.g. Intel i7, AMD Ryzen 7000 
 
   - type: checkboxes
     id: confirmation
