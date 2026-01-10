@@ -65,6 +65,7 @@ body:
         - Linux
         - macOS
         - Windows
+        - Android/Termux
         - Other
     validations:
       required: true
@@ -73,8 +74,8 @@ body:
     id: hardware
     attributes:
       label: Hardware / CPU
-      description: CPU details (e.g., x86, ARM, AVX support)
-      placeholder: e.g. Intel i7, ARM Cortex-A78
+      description: CPU details (e.g., x64, ARM)
+      placeholder: e.g. Intel i7, AMD, ARM
 
   - type: checkboxes
     id: confirmation
