@@ -6,3 +6,10 @@ __pycache__
 results
 # excluding user settings for the GUI frontend
 configs/settings.yaml
+#
+controlnet_models/control_v11p_sd15_canny_fp16.safetensors
+libstable-diffusion.so
+models/gguf/clip/clip_l_q4_0.gguf
+models/gguf/diffusion/flux1-schnell-q4_0.gguf
+models/gguf/t5xxl/t5xxl_q4_0.gguf
+models/gguf/vae/ae.safetensors
