@@ -6,3 +6,9 @@ __pycache__
 results
 # excluding user settings for the GUI frontend
 configs/settings.yaml
+## gguf
+libstable-diffusion.so
+models/gguf/diffusion/bonsai_image_4b-q1_0.gguf
+models/gguf/diffusion/flux-2-klein-4b-Q4_K_M.gguf
+models/gguf/llm/Qwen3-4B-Q4_K_M.gguf
+models/gguf/vae/ae.safetensors
